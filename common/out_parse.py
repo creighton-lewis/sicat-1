@@ -2,7 +2,7 @@ from colorama import Fore, Back, Style
 import re
 import os
 import json
-
+import pyaml
 class Output:
     def __init__(self):
         self.data = []
@@ -52,60 +52,6 @@ usage : sicat.py --help
         except:
             print(f"|{Fore.RED}- Internal Error - No result in ExploitDB!{Fore.WHITE}")
 
-    def exploitalert(self, content):
-        try:
-            if len(content) != 0:
-                print("|")
-                print(f"|{Fore.GREEN}+ ExploitAlert Result {Fore.WHITE}")
-                print("|------------------------")
-
-
-                predata = []
-                for data in content:
-                    print(f"|{Fore.BLUE}-{Fore.WHITE} Title : {data['name']}")
-                    print(f"|{Fore.BLUE}-{Fore.WHITE} Link : https://www.exploitalert.com/view-details.html?id={data['id']}")
-                    print("|")
-                    print("|")
-
-
-                    predata.append({
-                        "title" : data['name'],
-                        "link" : f"https://www.exploitalert.com/view-details.html?id={data['id']}"
-                    })
-                print(f"|{Fore.BLUE}-{Fore.WHITE} Total Result : {Fore.GREEN}{len(content)}{Fore.WHITE} Exploits Found!")
-                self.data.append({"exploitalert" : predata})
-            else:
-                print(f"|{Fore.RED}- No result in ExploitAlert!{Fore.WHITE}")
-        except:
-            print(f"|{Fore.RED}- Internal Error - No result in ExploitAlert!{Fore.WHITE}")
-
-    def packetstormsecurity(self, content):
-        try:
-            reg = re.findall('<dt><a class="ico text-plain" href="(.*?)" title="(.*?)">(.*?)</a></dt>', content)
-            if len(reg) != 0:
-                print("|")
-                print(f"|{Fore.GREEN}+ PacketStorm Result {Fore.WHITE}")
-                print("|-----------------------")
-
-                predata = []
-                for data in reg:
-                    print(f"|{Fore.BLUE}-{Fore.WHITE} Title : {data[2]}")
-                    print(f"|{Fore.BLUE}-{Fore.WHITE} Link : https://packetstormsecurity.com{data[0]}")
-                    print("|")
-                    print("|")
-
-                    predata.append({
-                        "title" : data[2],
-                        "link" : f"https://packetstormsecurity.com{data[0]}"
-                    })
-                print(f"|{Fore.BLUE}-{Fore.WHITE} Total Result : {Fore.GREEN}{len(reg)}{Fore.WHITE} Exploits Found!")
-                self.data.append({"packetstormsecurity" : predata})
-            else:
-                print(f"|{Fore.RED}- No result in PacketStorm!{Fore.WHITE}")
-        except:
-            print(f"|{Fore.RED}- Internal Error - No result in PacketStorm!{Fore.WHITE}")
-
-
 
     def msfmodule(self, content):
         try:
@@ -117,16 +63,30 @@ usage : sicat.py --help
 
                 predata = []
                 for data in content:
+                    print(f"=================================================================")
                     print(f"|{Fore.BLUE}-{Fore.WHITE} Title : {data['title'].capitalize()}")
                     print(f"|{Fore.BLUE}-{Fore.WHITE} Module : {data['module']}")
                     print(f"|{Fore.BLUE}-{Fore.WHITE} Link : {data['link']}")
-                    print("|")
-                    print("|")
+                   # print(f"|{Fore.BLUE}-{Fore.WHITE} References : {data['references']}")
 
-                    predata.append({
+                    if 'references' in data and data['references']:
+                        references = data['references']
+                    if isinstance(references, list):
+                        print(f"|{Fore.BLUE}-{Fore.WHITE} References:{Style.RESET_ALL}")
+                    for i, ref in enumerate(references):
+                        print(f"|    {Fore.CYAN}{i+1}. {ref}{Style.RESET_ALL}") # Indented and numbered
+                    else:
+        # If it's not a list (e.g., a single string), print it directly
+                    #    print(f"|{Fore.BLUE}-{Fore.WHITE} References : {references}{Style.RESET_ALL}")
+
+                   # print("|")
+                  #  print("|")
+
+                        predata.append({
                         "title" : data['title'],
                         "module" : data['module'],
-                        "link" : data['link']
+                        "link" : data['link'],
+                        "references" : data['references']
                     })
                 print(f"|{Fore.BLUE}-{Fore.WHITE} Total Result : {Fore.GREEN}{len(content)}{Fore.WHITE} Modules Found!")
                 self.data.append({"msfmodule" : predata})
@@ -169,7 +129,17 @@ usage : sicat.py --help
         self.genOutDir(location)
         report = json.dumps(self.data, indent=4)
         open(f"{location}/report.json", "w").write(report)
-    
+
+    def outYaml(self, file, location=""):
+        """Export data to YAML."""
+        import yaml
+        yaml = pyaml
+        self.genOutDir(location)
+        report = yaml.dump(self.data, indent=4, sort_keys=False)
+        with open (f"{file}report.yaml", "w", encoding="utf-8") as f:
+        #with open(f"{location}/report.yaml", "w", encoding="utf-8") as f:
+            f.write(report)  
+
     def outHtml(self, location = ""):
         self.genOutDir(location)
         html = """
@@ -191,14 +161,7 @@ usage : sicat.py --help
                     html += f"<tr><td>{num}</td><td>{exploitalert['title']}</td><td><a target='_blank' href='{exploitalert['link']}'class='visit'>visit</a></td></tr>"
                     num += 1
                 html += """</tbody></table></div>"""
-            
-            if "packetstormsecurity" in report:
-                html += """<div class="row"> <h2>PacketStorm Security</h2> <table id="packetstorm" class="display"> <thead> <tr> <th>#</th> <th>Title</th> <th>Link</th> </tr> </thead> <tbody>"""
-                num = 1
-                for packetstormsecurity in report['packetstormsecurity']:
-                    html += f"<tr><td>{num}</td><td>{packetstormsecurity['title']}</td><td><a target='_blank' href='{packetstormsecurity['link']}'class='visit'>visit</a></td></tr>"
-                    num += 1
-                html += """</tbody></table></div>"""
+        
 
             if "nvddb" in report:
                 html += """<div class="row"> <h2>NVD Database</h2> <table id="nvddb" class="display"> <thead> <tr> <th style="width: 14%;">ID</th> <th>Description</th> <th>Link</th> </tr> </thead> <tbody>"""

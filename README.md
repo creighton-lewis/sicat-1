@@ -17,7 +17,7 @@ SiCat's main strength lies in its ability to traverse both online and local reso
 ### SiCat Resources
 
  - [Exploit-DB](https://www.exploit-db.com/)
- - [Packetstorm Security](https://packetstormsecurity.com/)
+
  - [Exploit Alert](https://www.exploitalert.com/)
  - [NVD Database](https://nvd.nist.gov/)
  - [Metasploit Modules](https://github.com/rapid7/metasploit-framework/tree/master/modules)
@@ -49,7 +49,6 @@ pip  install  -r  requirements.txt
 | `-kv KEYWORK_VERSION` |  |
 | `-nm` | Identify via nmap output |
 | `--nvd` | Use NVD as info source |
-| `--packetstorm` | Use PacketStorm as info source |
 | `--exploitdb` | Use ExploitDB as info source |
 | `--exploitalert` | Use ExploitAlert as info source |
 | `--msfmoduke` | Use metasploit as info source |

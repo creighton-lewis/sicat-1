@@ -12,7 +12,7 @@ class MsfModule:
         try:
             datamod = []
             keyword = f"{keyword.lower()} {version.lower()}"
-            o = open("files/msf_module.json", "r").read()
+            o = open("files/msf_copy.json", "r").read()
             modules = json.loads(o)
             result = [data for data in modules if keyword in data['title']]
             return result
